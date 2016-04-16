@@ -1,16 +1,29 @@
 <?php
 	ob_start();
 
-	$user_latitude = $_POST["latitude"];
-	$user_longitude = $_POST["longitude"];
+	if (isset($_POST['latitude']) && isset($_POST['longitude']) && isset($_POST['type']))
+	{
+		$user_latitude = $_POST["latitude"];
+		$user_longitude = $_POST["longitude"];
+		$user_type = $_POST["type"];
+	} else {
+		die("Λανθασμένη μεταφορά δεδομένων!");
+		ob_flush();
+	}
+
 
 	/* Σύνδεση με τη βάση δεδομένων */
 	include('dbConnection.php');
 
-	$query = "SELECT * FROM monuments;";
+	if ('all' == $user_type) {
+		$query = "SELECT * FROM monuments;";
+	} else {
+		$query = "SELECT *
+			FROM monuments
+			WHERE type='$user_type';";
+	}
+
 	$result = mysqli_query($conn, $query);
-
-
 	if ($result)
 	{
 		$count = mysqli_num_rows($result);
