@@ -1,11 +1,12 @@
 <?php
 	ob_start();
 
-	if (isset($_POST['latitude']) && isset($_POST['longitude']) && isset($_POST['type']))
+	if (isset($_POST['latitude']) && isset($_POST['longitude']) && isset($_POST['type']) && isset($_POST['amount']))
 	{
 		$user_latitude = $_POST["latitude"];
 		$user_longitude = $_POST["longitude"];
 		$user_type = $_POST["type"];
+		$user_amount = $_POST["amount"];
 	} else {
 		die("Λανθασμένη μεταφορά δεδομένων!");
 		ob_flush();
@@ -15,13 +16,12 @@
 	/* Σύνδεση με τη βάση δεδομένων */
 	include('dbConnection.php');
 
-	if ('all' == $user_type) {
-		$query = "SELECT * FROM monuments;";
-	} else {
-		$query = "SELECT *
-			FROM monuments
-			WHERE type='$user_type';";
-	}
+	$query = "SELECT (((3959 * acos( cos( radians($user_longitude) ) * cos( radians( latitude ) )
+	* cos( radians( longitude ) - radians($user_latitude) ) + sin( radians($user_longitude) )
+	* sin( radians( latitude ) ) ) )* 1.609344)) AS distance, name, latitude, longitude FROM monuments";
+	if ('all' != $user_type)	$query = $query . " WHERE type='$user_type' ";
+	$query = $query . " ORDER BY distance LIMIT 0 , $user_amount;";
+
 
 	$result = mysqli_query($conn, $query);
 	if ($result)
@@ -29,22 +29,21 @@
 		$count = mysqli_num_rows($result);
 		if (0 < $count)
 		{
-			$min = 41000; //The circumference of the earth at the equator is 24,901.55 miles (40,075.16 kilometers).
-			$name = "";
-			$name = "";
-			$name = "";
+			$index = 1;
+			$markersArray = array();
 			while ($row = mysqli_fetch_array($result))
 			{
-				$temp = getDistanceBetweenPointsNew($user_latitude, $user_longitude, $row['latitude'], $row['longitude'], 'Km');
-				if ($temp < $min)
-				{
-					$min = $temp;
-					$result_name = $row['name'];
-					$result_latitude = $row['latitude'];
-					$result_longitude = $row['longitude'];
-				}
+				$result_distance = $row['distance'];
+				$result_name = $row['name'];
+				$result_latitude = $row['latitude'];
+				$result_longitude = $row['longitude'];
+
+				array_push($markersArray, [$row['name'], $row['latitude'], $row['longitude']]);
+
+				if (1 == $user_amount)	echo "Το πιο κοντινό μνημείο σε εσάς είναι το μνημείο '$result_name' στα ". round($result_distance,2) . " km <br>";
+				else					echo "Το ". $index ."o κοντινό μνημείο σε εσάς είναι το μνημείο '$result_name' στα ". round($result_distance,2) . " km <br>";
+				$index++;
 			}
-			echo "Το πιο κοντινό μνημείο σε εσάς είναι το μνημείο '$result_name' στα $min km";
 		}
 		else echo "Δεν υπάρχει κανένα καταχωρημένο μνημείο!";
 
@@ -57,28 +56,7 @@
 
 	/* Αποσύνδεση από τη βάση δεδομένων */
 	include('dbDisConnection.php');
-
-
-	// http://stackoverflow.com/questions/20152492/calculate-distance-php-and-add-to-json
-	function getDistanceBetweenPointsNew($latitude1, $longitude1, $latitude2, $longitude2, $unit)
-	{
-		$theta = $longitude1 - $longitude2;
-		$distance = (sin(deg2rad($latitude1)) * sin(deg2rad($latitude2))
-				+ (cos(deg2rad($latitude1)) * cos(deg2rad($latitude2)) * cos(deg2rad($theta))));
-		$distance = acos($distance); $distance = rad2deg($distance); 
-		$distance = $distance * 60 * 1.1515;
-
-		switch($unit) 
-		{ 
-			case 'Mi': break;
-			case 'Km' : $distance = $distance * 1.609344; 
-		} 
-		return (round($distance,2)); 
-	}
 ?>
-
-
-
 
 
 <!DOCTYPE html>
@@ -91,8 +69,11 @@
 		<script type='text/javascript'>
 			var markers = [
 			<?php
-				echo "{'title':'Εσείς','lat':'$user_latitude','lng':'$user_longitude','description':'Εσείς'},
-				{'title':'$result_name','lat':'$result_latitude','lng':'$result_longitude','description':'$result_name'}"
+				echo "{'title':'Εσείς','lat':'$user_latitude','lng':'$user_longitude','description':'Εσείς'}";
+
+				foreach ($markersArray as &$marker) {
+					echo ",{'title':'$marker[0]','lat':'$marker[1]','lng':'$marker[2]','description':'$marker[0]'}";
+				}
 			?>
 			];
 
@@ -117,17 +98,21 @@
 				});
 				latlngbounds.extend(marker.position);
 
-				var line = new google.maps.Polyline({
-					path: [
-						new google.maps.LatLng(<?php echo $user_latitude ?>, <?php echo $user_longitude ?>), 
-						new google.maps.LatLng(<?php echo $result_latitude ?>, <?php echo $result_longitude ?>)
-					],
-					strokeColor: "#FF0",
-					strokeOpacity: 1.0,
-					strokeWeight: 3,
-					geodesic: true,
-					map: map
-				});
+				<?php
+					foreach ($markersArray as &$marker) {
+						echo "var line = new google.maps.Polyline({
+							path: [
+								new google.maps.LatLng($user_latitude, $user_longitude),
+								new google.maps.LatLng(". $marker[1] .", ". $marker[2] .")
+							],
+							strokeColor: '#FF0',
+							strokeOpacity: 1.0,
+							strokeWeight: 3,
+							geodesic: true,
+							map: map
+						});";
+					}
+				?>
 
 				(function (marker, data) {
 					google.maps.event.addListener(marker, 'click', function (e) {
@@ -157,6 +142,5 @@
 
 
 <?php
-
 	ob_flush();
 ?>

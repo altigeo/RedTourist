@@ -6,7 +6,7 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/html">
 	<head>
-		<title>RedTourist v0.4 - Κόκκινη Σαγκριά</title>
+		<title>RedTourist v0.6 - Κόκκινη Σαγκριά</title>
 	</head>
 
 	<body>
@@ -17,8 +17,13 @@
 				<option value='all' selected >Όλα</option>
 				<option value='statues' >Αγάλματα / Γλυπτά</option>
 				<option value='heroons' >Ηρώα</option>
-				<option value='military cemeteries'>Στρατιωτικα Νεκροταφεια</option>
+				<option value='military cemeteries' >Στρατιωτικα Νεκροταφεια</option>
 				<option value='museums' >Μουσεία</option>
+			</select><br>
+			Πλήθος μνημείων: <select name='amount' >
+				<option value='1' selected >1</option>
+				<option value='5' >5</option>
+				<option value='10' >10</option>
 			</select><br>
 			<input type='submit' value='Αναζήτηση' >
 		</form>

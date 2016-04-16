@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Φιλοξενητής: 127.0.0.1
--- Χρόνος δημιουργίας: 16 Απρ 2016 στις 15:37:37
+-- Χρόνος δημιουργίας: 16 Απρ 2016 στις 18:19:55
 -- Έκδοση διακομιστή: 10.1.10-MariaDB
 -- Έκδοση PHP: 7.0.4
 
@@ -28,7 +28,7 @@ SET time_zone = "+00:00";
 
 CREATE TABLE `monuments` (
   `id` int(11) NOT NULL,
-  `type` varchar(50) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'γενικό',
+  `type` varchar(50) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'all',
   `name` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
   `latitude` double NOT NULL DEFAULT '0',
   `longitude` double NOT NULL DEFAULT '0'
@@ -39,7 +39,8 @@ CREATE TABLE `monuments` (
 --
 
 INSERT INTO `monuments` (`id`, `type`, `name`, `latitude`, `longitude`) VALUES
-(1, 'statues', 'Λέων Αμφίπολης', 40.803073, 23.842533);
+(1, 'statues', 'Λέων Αμφίπολης', 40.803073, 23.842533),
+(2, 'museums', 'Αχμέτ Πάσα', 41.091472, 23.559535);
 
 --
 -- Ευρετήρια για άχρηστους πίνακες
@@ -59,7 +60,7 @@ ALTER TABLE `monuments`
 -- AUTO_INCREMENT για πίνακα `monuments`
 --
 ALTER TABLE `monuments`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
