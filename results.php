@@ -44,7 +44,7 @@
 					$result_longitude = $row['longitude'];
 				}
 			}
-			echo "Το πιο κοντινό μνημείο σε εσάς είναι το μνημείο '$result_name'";
+			echo "Το πιο κοντινό μνημείο σε εσάς είναι το μνημείο '$result_name' στα $min km";
 		}
 		else echo "Δεν υπάρχει κανένα καταχωρημένο μνημείο!";
 
@@ -87,7 +87,7 @@
 		<title>RedTourist - Κόκκινη Σαγκριά</title>
 
 		<!-- http://sforsuresh.in/display-google-map-locations-using-latitude-longitude/ -->
-		<script src='http://maps.googleapis.com/maps/api/js?sensor=false' type='text/javascript'></script>
+		<script src='http://maps.googleapis.com/maps/api/js?libraries=geometry' type='text/javascript'></script>
 		<script type='text/javascript'>
 			var markers = [
 			<?php
@@ -116,6 +116,19 @@
 					title: data.title
 				});
 				latlngbounds.extend(marker.position);
+
+				var line = new google.maps.Polyline({
+					path: [
+						new google.maps.LatLng(<?php echo $user_latitude ?>, <?php echo $user_longitude ?>), 
+						new google.maps.LatLng(<?php echo $result_latitude ?>, <?php echo $result_longitude ?>)
+					],
+					strokeColor: "#FF0",
+					strokeOpacity: 1.0,
+					strokeWeight: 3,
+					geodesic: true,
+					map: map
+				});
+
 				(function (marker, data) {
 					google.maps.event.addListener(marker, 'click', function (e) {
 						infoWindow.setContent(data.description);
