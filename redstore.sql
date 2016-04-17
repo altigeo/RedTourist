@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Φιλοξενητής: 127.0.0.1
--- Χρόνος δημιουργίας: 16 Απρ 2016 στις 18:19:55
+-- Χρόνος δημιουργίας: 16 Απρ 2016 στις 19:20:27
 -- Έκδοση διακομιστή: 10.1.10-MariaDB
 -- Έκδοση PHP: 7.0.4
 
@@ -40,7 +40,11 @@ CREATE TABLE `monuments` (
 
 INSERT INTO `monuments` (`id`, `type`, `name`, `latitude`, `longitude`) VALUES
 (1, 'statues', 'Λέων Αμφίπολης', 40.803073, 23.842533),
-(2, 'museums', 'Αχμέτ Πάσα', 41.091472, 23.559535);
+(2, 'museums', 'Αχμέτ Πάσα', 41.091472, 23.559535),
+(3, 'museums', 'Μουσείο Φυσικής Ιστορίας', 41.099921, 23.569491),
+(4, 'museums', 'Μουσείο Παλαιάς Μητρόπολης Σερρών, Ίωνος Δραγούμη', 41.093731, 23.552608),
+(5, 'museums', 'Εκκλησιαστικό Μουσείο Ιεράς Μητρόπολης', 41.092958, 23.549323),
+(6, 'museums', 'Αρχαιολογικό Μουσείο Αμφίπολης', 40.825181, 23.848735);
 
 --
 -- Ευρετήρια για άχρηστους πίνακες
@@ -60,7 +64,7 @@ ALTER TABLE `monuments`
 -- AUTO_INCREMENT για πίνακα `monuments`
 --
 ALTER TABLE `monuments`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;

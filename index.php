@@ -6,7 +6,7 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/html">
 	<head>
-		<title>RedTourist v0.6 - Κόκκινη Σαγκριά</title>
+		<title>RedTourist v0.7 - Κόκκινη Σαγκριά</title>
 	</head>
 
 	<body>

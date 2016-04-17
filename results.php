@@ -16,6 +16,7 @@
 	/* Σύνδεση με τη βάση δεδομένων */
 	include('dbConnection.php');
 
+	// http://sforsuresh.in/finding-nearest-location-using-latitude-longitude/
 	$query = "SELECT (((3959 * acos( cos( radians($user_longitude) ) * cos( radians( latitude ) )
 	* cos( radians( longitude ) - radians($user_latitude) ) + sin( radians($user_longitude) )
 	* sin( radians( latitude ) ) ) )* 1.609344)) AS distance, name, latitude, longitude FROM monuments";
@@ -35,13 +36,11 @@
 			{
 				$result_distance = $row['distance'];
 				$result_name = $row['name'];
-				$result_latitude = $row['latitude'];
-				$result_longitude = $row['longitude'];
 
 				array_push($markersArray, [$row['name'], $row['latitude'], $row['longitude']]);
 
 				if (1 == $user_amount)	echo "Το πιο κοντινό μνημείο σε εσάς είναι το μνημείο '$result_name' στα ". round($result_distance,2) . " km <br>";
-				else					echo "Το ". $index ."o κοντινό μνημείο σε εσάς είναι το μνημείο '$result_name' στα ". round($result_distance,2) . " km <br>";
+				else					echo "Το ". $index ."o κοντινότερο μνημείο σε εσάς είναι το μνημείο '$result_name' στα ". round($result_distance,2) . " km <br>";
 				$index++;
 			}
 		}
@@ -98,6 +97,7 @@
 				});
 				latlngbounds.extend(marker.position);
 
+				// https://developers.google.com/maps/documentation/javascript/examples/polyline-simple
 				<?php
 					foreach ($markersArray as &$marker) {
 						echo "var line = new google.maps.Polyline({
