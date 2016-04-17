@@ -1,25 +1,26 @@
 <?php
 	ob_start();
 
-	if (isset($_POST['latitude']) && isset($_POST['longitude']) && isset($_POST['type']) && isset($_POST['amount']))
+
+	if (isset($_GET['latitude']) && isset($_GET['longitude']) && isset($_GET['type']) && isset($_GET['amount']))
 	{
-		$user_latitude = $_POST["latitude"];
-		$user_longitude = $_POST["longitude"];
-		$user_type = $_POST["type"];
-		$user_amount = $_POST["amount"];
+		$user_latitude = $_GET["latitude"];
+		$user_longitude = $_GET["longitude"];
+		$user_type = $_GET["type"];
+		$user_amount = $_GET["amount"];
 	} else {
 		die("Λανθασμένη μεταφορά δεδομένων!");
 		ob_flush();
 	}
 
-
 	/* Σύνδεση με τη βάση δεδομένων */
 	include('dbConnection.php');
 
 	// http://sforsuresh.in/finding-nearest-location-using-latitude-longitude/
-	$query = "SELECT (((3959 * acos( cos( radians($user_longitude) ) * cos( radians( latitude ) )
+	$query = "SELECT ((6371 * acos( cos( radians($user_longitude) ) * cos( radians( latitude ) )
 	* cos( radians( longitude ) - radians($user_latitude) ) + sin( radians($user_longitude) )
-	* sin( radians( latitude ) ) ) )* 1.609344)) AS distance, name, latitude, longitude FROM monuments";
+	* sin( radians( latitude ) ) ) )) AS distance, name, latitude, longitude FROM monuments";
+
 	if ('all' != $user_type)	$query = $query . " WHERE type='$user_type' ";
 	$query = $query . " ORDER BY distance LIMIT 0 , $user_amount;";
 
@@ -37,7 +38,11 @@
 				$result_distance = $row['distance'];
 				$result_name = $row['name'];
 
-				array_push($markersArray, [$row['name'], $row['latitude'], $row['longitude']]);
+				//$result_latitude = $row['latitude'];
+				//$result_longitude = $row['longitude'];
+
+				$tempArray = array($row['name'], $row['latitude'], $row['longitude']);
+				array_push($markersArray, $tempArray);
 
 				if (1 == $user_amount)	echo "Το πιο κοντινό μνημείο σε εσάς είναι το μνημείο '$result_name' στα ". round($result_distance,2) . " km <br>";
 				else					echo "Το ". $index ."o κοντινότερο μνημείο σε εσάς είναι το μνημείο '$result_name' στα ". round($result_distance,2) . " km <br>";
@@ -61,6 +66,7 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/html">
 	<head>
+		<meta http-equiv='content-type' content='text/html; charset=utf-8' />
 		<title>RedTourist - Κόκκινη Σαγκριά</title>
 
 		<!-- http://sforsuresh.in/display-google-map-locations-using-latitude-longitude/ -->
@@ -135,10 +141,6 @@
 
 	</body>
 </html>
-
-
-
-
 
 
 <?php
