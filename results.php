@@ -1,5 +1,12 @@
 <?php
 	ob_start();
+?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/html">
+	<head>
+		<meta http-equiv='content-type' content='text/html; charset=utf-8' />
+		<title>RedTourist v1.0 - Κόκκινη Σαγκριά</title>
+<?php
 
 
 	if (isset($_GET['latitude']) && isset($_GET['longitude']) && isset($_GET['type']) && isset($_GET['amount']))
@@ -17,36 +24,41 @@
 	include('dbConnection.php');
 
 	// http://sforsuresh.in/finding-nearest-location-using-latitude-longitude/
-	$query = "SELECT ((6371 * acos( cos( radians($user_longitude) ) * cos( radians( latitude ) )
-	* cos( radians( longitude ) - radians($user_latitude) ) + sin( radians($user_longitude) )
-	* sin( radians( latitude ) ) ) )) AS distance, name, latitude, longitude FROM monuments";
-
+	$query = "SELECT * FROM monuments";
 	if ('all' != $user_type)	$query = $query . " WHERE type='$user_type' ";
-	$query = $query . " ORDER BY distance LIMIT 0 , $user_amount;";
-
 
 	$result = mysqli_query($conn, $query);
 	if ($result)
 	{
+		$markersArray = array();
 		$count = mysqli_num_rows($result);
 		if (0 < $count)
 		{
-			$index = 1;
-			$markersArray = array();
+			//$min_distance = 40100; //The circumference of the earth at the equator is 24,901.55 miles (40,075.16 kilometers).
 			while ($row = mysqli_fetch_array($result))
 			{
-				$result_distance = $row['distance'];
-				$result_name = $row['name'];
+				$distance = getDistanceBetweenPointsNew($user_latitude, $user_longitude, $row['latitude'], $row['longitude'], 'Km');
+				array_push($markersArray, array($row['name'], $row['latitude'], $row['longitude'], $distance, $row['source']));
+			}
 
-				//$result_latitude = $row['latitude'];
-				//$result_longitude = $row['longitude'];
+			usort($markersArray, function($a, $b) {
+				return $a[3] - $b[3];
+			});
 
-				$tempArray = array($row['name'], $row['latitude'], $row['longitude']);
-				array_push($markersArray, $tempArray);
-
-				if (1 == $user_amount)	echo "Το πιο κοντινό μνημείο σε εσάς είναι το μνημείο '$result_name' στα ". round($result_distance,2) . " km <br>";
-				else					echo "Το ". $index ."o κοντινότερο μνημείο σε εσάς είναι το μνημείο '$result_name' στα ". round($result_distance,2) . " km <br>";
-				$index++;
+			if ('all' != $user_type) {
+				echo "Το πιο κοντινό μνημείο σε εσάς είναι το μνημείο '". $markersArray[0][0] ."' στα ". round($markersArray[0][3], 4) ." km. <br>";
+			} else {
+				if (1 == $count) {
+					echo "Το πιο κοντινό μνημείο σε εσάς είναι το μνημείο '". $markersArray[0][0] ."' στα ". round($markersArray[0][3], 4) ." km. <br>";
+				}
+				else {
+					$index = 1;
+					foreach ($markersArray as &$marker) {
+						echo "Το ". $index ."o κοντινότερο μνημείο σε εσάς είναι το μνημείο '$marker[0]' στα ". round($marker[3], 4) . " km. <br>";
+						if ($user_amount == $index) break;
+						$index++;
+					}
+				}
 			}
 		}
 		else echo "Δεν υπάρχει κανένα καταχωρημένο μνημείο!";
@@ -60,14 +72,21 @@
 
 	/* Αποσύνδεση από τη βάση δεδομένων */
 	include('dbDisConnection.php');
+
+
+	//https://www.marketingtechblog.com/calculate-distance/
+	function getDistanceBetweenPointsNew($latitude1, $longitude1, $latitude2, $longitude2, $unit) {
+		$theta = $longitude1 - $longitude2;
+		$distance = (sin(deg2rad($latitude1)) * sin(deg2rad($latitude2))) + (cos(deg2rad($latitude1)) * cos(deg2rad($latitude2)) * cos(deg2rad($theta)));
+		$distance = acos($distance);
+		$distance = rad2deg($distance);
+		$distance = $distance * 60 * 1.1515; switch($unit) {
+			case 'Mi': break; case 'Km' : $distance = $distance * 1.609344;
+		}
+		return (round($distance,2));
+	}
 ?>
 
-
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/html">
-	<head>
-		<meta http-equiv='content-type' content='text/html; charset=utf-8' />
-		<title>RedTourist - Κόκκινη Σαγκριά</title>
 
 		<!-- http://sforsuresh.in/display-google-map-locations-using-latitude-longitude/ -->
 		<script src='http://maps.googleapis.com/maps/api/js?libraries=geometry' type='text/javascript'></script>
@@ -76,8 +95,11 @@
 			<?php
 				echo "{'title':'Εσείς','lat':'$user_latitude','lng':'$user_longitude','description':'Εσείς'}";
 
+				$index = 1;
 				foreach ($markersArray as &$marker) {
 					echo ",{'title':'$marker[0]','lat':'$marker[1]','lng':'$marker[2]','description':'$marker[0]'}";
+					if ($user_amount == $index) break;
+					$index++;
 				}
 			?>
 			];
@@ -105,6 +127,7 @@
 
 				// https://developers.google.com/maps/documentation/javascript/examples/polyline-simple
 				<?php
+					$index = 1;
 					foreach ($markersArray as &$marker) {
 						echo "var line = new google.maps.Polyline({
 							path: [
@@ -117,6 +140,8 @@
 							geodesic: true,
 							map: map
 						});";
+						if ($user_amount <= $index) break;
+						$index++;
 					}
 				?>
 
@@ -137,8 +162,20 @@
 
 	<body>
 
-		<div id='dvMap' style='width: 500px; height: 500px;'></div>
+		<div id='dvMap' style='width:500px; height:500px;'></div>
 
+		<?php
+			$index = 1;
+			foreach ($markersArray as &$marker) {
+				if ($marker[4]) {
+					echo $marker[0] ."<br>";
+					echo "<img src='". $marker[4] ."' style='width:100%; height:auto;' >";
+					echo "<br>";
+				}
+				if ($user_amount == $index) break;
+				$index++;
+			}
+		?>
 	</body>
 </html>
 

@@ -7,7 +7,7 @@
 <html xmlns="http://www.w3.org/1999/html">
 	<head>
 		<meta http-equiv='content-type' content='text/html; charset=utf-8' />
-		<title>RedTourist v0.7 - Κόκκινη Σαγκριά</title>
+		<title>RedTourist v1.0 - Κόκκινη Σαγκριά</title>
 	</head>
 
 	<body>
